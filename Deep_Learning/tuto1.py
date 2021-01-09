@@ -31,3 +31,21 @@ model.fit(train_images, train_labels, epochs=5, batch_size=128)
 test_loss, test_acc = model.evaluate(test_images, test_labels)
 print(f'test loss: {test_loss}, test acc: {test_acc}')
 show_pic(train_images[4].reshape(28, 28))
+
+
+# p 70
+
+# model = models.Sequential()
+# model.add(layers.Dense(32, activation='relu', input_shape=(784,)))
+# model.add(layers.Dense(10, activation='softmax'))
+#
+# # # here same model is builded
+# # input_tensor = layers.Input(shape=(784,))
+# # x = layers.Dense(32, activation='relu')(input_tensor)
+# # output_tensor = layers.Dense(10, activation='softmax')(x)
+# #
+# # model = models.Model(inputs=input_tensor, outputs=output_tensor)
+#
+# model.compile(optimizer=optimizers.RMSprop(lr=.001),
+#               loss='mse',
+#               metrics=['accuracy'])
