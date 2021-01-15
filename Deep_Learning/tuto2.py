@@ -1,5 +1,5 @@
 import silence_tensorflow.auto
-from tensorflow.keras import models, layers, optimizers
+from tensorflow.keras import models, layers, optimizers, regularizers
 from tensorflow.keras.datasets import imdb
 import numpy as np
 import matplotlib.pyplot as plt
@@ -31,8 +31,10 @@ y_train, y_test = np.asarray(train_labels).astype('float32'), np.asarray(test_la
 epochs = 5
 
 model = models.Sequential()
-model.add(layers.Dense(16, input_shape=(10000,), activation='relu'))
-model.add(layers.Dense(16, activation='relu'))
+model.add(layers.Dense(16, input_shape=(10000,), activation='relu',
+                       kernel_regularizer=regularizers.l2(.001)))
+model.add(layers.Dense(16, activation='relu',
+                       kernel_regularizer=regularizers.l2(.001)))
 model.add(layers.Dense(1, activation='sigmoid'))
 
 model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['acc'])
