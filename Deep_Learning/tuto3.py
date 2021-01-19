@@ -1,3 +1,5 @@
+""" Multilabel classification with words """
+
 import silence_tensorflow.auto
 from tensorflow.keras.datasets import reuters
 from tensorflow.keras import models, layers

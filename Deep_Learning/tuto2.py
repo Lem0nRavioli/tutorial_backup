@@ -1,3 +1,5 @@
+""" Sentiment analysis """
+
 import silence_tensorflow.auto
 from tensorflow.keras import models, layers, optimizers, regularizers
 from tensorflow.keras.datasets import imdb

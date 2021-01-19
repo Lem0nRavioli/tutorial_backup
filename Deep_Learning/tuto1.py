@@ -1,3 +1,5 @@
+""" Basic keras models """
+
 import silence_tensorflow.auto
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras import models, layers
