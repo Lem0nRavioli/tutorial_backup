@@ -35,7 +35,28 @@ for i, sample in enumerate(samples):
         index = token_index_char.get(character)
         results_char[i, j, index] = 1
 
-print(results_char.shape)
-print(results)
+# print(results_char.shape)
+# print(results)
 
-# p205, continue here
+""" One hot word with hashing trick """
+# see p206
+dimensionality = 1000
+max_length = 10
+results = np.zeros((len(samples), max_length, dimensionality))
+for i, sample in enumerate(samples):
+    for j, word in list(enumerate(sample.split()))[:max_length]:
+        index = abs(hash(word)) % dimensionality
+        results[i, j, index] = 1
+
+
+import silence_tensorflow.auto
+from tensorflow.keras.preprocessing.text import Tokenizer
+
+tokenizer = Tokenizer(num_words=1000)
+tokenizer.fit_on_texts(samples)  # Build the word index
+sequences = tokenizer.texts_to_sequences(samples)  # turn strings into list of int indices
+one_hot_results = tokenizer.texts_to_matrix(samples, mode='binary')  # turn string into one_hot binary
+word_index = tokenizer.word_index  # dict of words
+print('Found %s unique tokens.' % len(word_index))
+
+# p207
