@@ -58,5 +58,7 @@ sequences = tokenizer.texts_to_sequences(samples)  # turn strings into list of i
 one_hot_results = tokenizer.texts_to_matrix(samples, mode='binary')  # turn string into one_hot binary
 word_index = tokenizer.word_index  # dict of words
 print('Found %s unique tokens.' % len(word_index))
+print(one_hot_results.shape)
+print(sequences)
 
 # p207

@@ -10,7 +10,7 @@ def show_pic(pic, color=False):
     plt.show()
 
 
-def plot_history(train, validation, epoch, metric=''):
+def plot_history(train, validation, epoch, metric='', show=True):
     plt.clf()
     plt.plot(range(1, epoch + 1), train, 'bo', label=f'Training {metric}')
     plt.plot(range(1, epoch + 1), validation, 'b', label=f'Validation {metric}')
@@ -18,7 +18,19 @@ def plot_history(train, validation, epoch, metric=''):
     plt.xlabel('Epochs')
     plt.ylabel(metric)
     plt.legend()
-    plt.show()
+    if show:
+        plt.show()
+
+
+def plot_acc_loss(history, epochs):
+    acc = history.history['acc']
+    val_acc = history.history['val_acc']
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+
+    plot_history(acc, val_acc, epochs, metric='Accuracy', show=False)
+    plt.figure()
+    plot_history(loss, val_loss, epochs, metric='Loss')
 
 
 def to_one_hot(labels):
