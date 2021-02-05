@@ -1,6 +1,6 @@
 """ RNN """
 import silence_tensorflow.auto
-from tensorflow.keras.layers import Embedding, Flatten, Dense, RNN, SimpleRNN, LSTM
+from tensorflow.keras.layers import Embedding, Flatten, Dense, RNN, SimpleRNN, LSTM, Bidirectional
 from tensorflow.keras.models import Sequential
 from tensorflow.keras import preprocessing
 from tensorflow.keras.datasets import imdb
@@ -86,6 +86,45 @@ def train_plot_LSTM():
     plot_acc_loss(history, epochs)
 
 
-train_plot_LSTM()
-
 # p230
+# p244 for reverse ordering
+
+
+def try_reverse_order():
+    (x_train, y_train), (x_test, y_test) = imdb.load_data(num_words=max_features)
+    x_train = [x[::-1] for x in x_train]
+    x_test = [x[::-1] for x in x_test]
+
+    x_train = preprocessing.sequence.pad_sequences(x_train, maxlen=maxlen)
+    x_test = preprocessing.sequence.pad_sequences(x_test, maxlen=maxlen)
+
+    model = Sequential()
+    model.add(Embedding(max_features, 128))
+    model.add(LSTM(32))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['acc'])
+    history = model.fit(x_train, y_train, epochs=10, batch_size=128, validation_split=.2)
+
+    plot_acc_loss(history, 10)
+
+
+def try_bidirectionnal_layer():
+    (x_train, y_train), (x_test, y_test) = imdb.load_data(num_words=max_features)
+    x_train = [x[::-1] for x in x_train]
+    x_test = [x[::-1] for x in x_test]
+
+    x_train = preprocessing.sequence.pad_sequences(x_train, maxlen=maxlen)
+    x_test = preprocessing.sequence.pad_sequences(x_test, maxlen=maxlen)
+
+    model = Sequential()
+    model.add(Embedding(max_features, 32))
+    model.add(Bidirectional(LSTM(32)))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['acc'])
+    history = model.fit(x_train, y_train, epochs=10, batch_size=128, validation_split=.2)
+
+    plot_acc_loss(history, 10)
+
+
+# train_plot_LSTM()
+try_bidirectionnal_layer()
