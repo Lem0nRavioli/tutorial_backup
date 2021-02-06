@@ -1,3 +1,4 @@
+""" Weather forecasting with GRU / LSTM / Bidirectional """
 import silence_tensorflow.auto
 import os
 import numpy as np
@@ -173,4 +174,5 @@ def try_bidirectional_lstm():
     plot_history(loss, val_loss, 20, "loss")
 
 
-try_bidirectional_lstm()
+
+# p248
