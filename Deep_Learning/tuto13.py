@@ -124,3 +124,5 @@ def multi_ouput_toy():
 
 
 # p267
+
+# see p270 for usage of same layer on multiple input (like for sentence comparison)
