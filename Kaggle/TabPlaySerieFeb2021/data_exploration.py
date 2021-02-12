@@ -21,9 +21,15 @@ x_valid, y_valid = data[200000:250000], target[200000:250000]
 x_test, y_test = data[250000:], target[250000:]
 
 model = Sequential()
-model.add(Dense(128, activation='relu', input_shape=(70,)))
+model.add(Dense(64, activation='relu', input_shape=(70,)))
 model.add(Dropout(.5))
-model.add(Dense(64, activation='relu'))
+model.add(Dense(32, activation='relu'))
+model.add(Dropout(.5))
+model.add(Dense(32, activation='relu'))
+model.add(Dropout(.5))
+model.add(Dense(32, activation='relu'))
+model.add(Dropout(.5))
+model.add(Dense(32, activation='relu'))
 model.add(Dropout(.5))
 model.add(Dense(32, activation='relu'))
 model.add(Dense(1))
@@ -37,7 +43,10 @@ def test_model():
     val_loss = history.history['val_loss']
 
     plot_history(loss, val_loss, 20, 'loss')
-    model.evaluate(x_test, y_test)
+    # model.evaluate(x_test, y_test)
 
 
 # model.fit(data, target, epochs=20, batch_size=128)
+test_model()
+
+# .7461 128/.5/64/.5/32/1
