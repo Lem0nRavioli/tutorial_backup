@@ -7,6 +7,7 @@ from tensorflow.keras.preprocessing import image
 import tensorflow as tf
 import numpy as np
 import scipy.misc
+import imageio
 
 tf.compat.v1.disable_eager_execution()
 
@@ -84,11 +85,12 @@ def resize_img(img, size):
 
 def save_img(img, fname):
     pil_img = deprocess_image(np.copy(img))
-    scipy.misc.imsave(fname, pil_img)
-
+    # scipy.misc.imsave(fname, pil_img)
+    imageio.imwrite(fname, pil_img)
+    
 
 step = .01
-num_octave = 3
+num_octave = 5
 octave_scale = 1.4
 iterations = 20
 max_loss = 10.
@@ -119,3 +121,5 @@ for shape in successive_shapes:
     save_img(img, fname='dream at scale_' + str(shape) + '.png')
 
 save_img(img, fname='final_dream.png')
+
+# p310
