@@ -77,3 +77,27 @@ def train_k_fold(model, data, k):
         validation_scores.append(validation_score)
 
     return np.average(validation_scores)
+
+
+def show_conv(model, x_test, first=0, second=7, third=26, convnum=1, laynum=4):
+    """ Not supposed to be used as it is, saving the template """
+    from tensorflow import keras
+    f, axarr = plt.subplots(3, laynum)
+    FIRST_IMAGE = first
+    SECOND_IMAGE = second
+    THIRD_IMAGE = third
+    CONVOLUTION_NUMBER = convnum
+    layer_outputs = [layer.output for layer in model.layers]
+    activation_model = keras.models.Model(inputs=model.input, outputs=layer_outputs)
+    for x in range(0, laynum):
+        f1 = activation_model.predict(x_test[FIRST_IMAGE].reshape(1, 28, 28, 1))[x]
+        axarr[0, x].imshow(f1[0, :, :, CONVOLUTION_NUMBER], cmap='inferno')
+        axarr[0, x].grid(False)
+        f2 = activation_model.predict(x_test[SECOND_IMAGE].reshape(1, 28, 28, 1))[x]
+        axarr[1, x].imshow(f2[0, :, :, CONVOLUTION_NUMBER], cmap='inferno')
+        axarr[1, x].grid(False)
+        f3 = activation_model.predict(x_test[THIRD_IMAGE].reshape(1, 28, 28, 1))[x]
+        axarr[2, x].imshow(f3[0, :, :, CONVOLUTION_NUMBER], cmap='inferno')
+        axarr[2, x].grid(False)
+
+    plt.show()

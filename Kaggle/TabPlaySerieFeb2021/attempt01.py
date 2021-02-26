@@ -2,7 +2,7 @@ import pandas as pd
 import silence_tensorflow.auto
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.layers import Dense, Dropout, BatchNormalization
 from tuto_utils.util_func import plot_history
 
 train = pd.read_csv('../../DataSets/TPSfeb2021/train.csv')
@@ -42,15 +42,12 @@ print(x_test.shape)
 
 def run_prediction(earlystop=False):
     model = Sequential()
-    model.add(Dense(64, activation='relu', input_shape=(69,)))
-    model.add(Dense(32, activation='relu'))
-    model.add(Dropout(.3))
-    model.add(Dense(32, activation='relu'))
-    model.add(Dropout(.3))
-    model.add(Dense(32, activation='relu'))
-    model.add(Dropout(.3))
-    model.add(Dense(32, activation='relu'))
+    model.add(Dense(128, activation='relu', input_shape=(69,)))
+    model.add(Dense(64, activation='relu'))
+    model.add(BatchNormalization())
     model.add(Dropout(.5))
+    model.add(Dense(32, activation='relu'))
+    model.add(Dropout(.3))
     model.add(Dense(32, activation='relu'))
     model.add(Dense(1))
     if earlystop:
@@ -61,12 +58,17 @@ def run_prediction(earlystop=False):
         model.fit(x_train, y_train, epochs=20, batch_size=128, validation_split=.2, callbacks=callbacks_list)
     else:
         model.compile(optimizer='rmsprop', loss='mse')
-        model.fit(x_train, y_train, epochs=80, batch_size=128)
+        model.fit(x_train, y_train, epochs=20, batch_size=128)
 
     prediction = model.predict(x_test)
     test_prediction = test[['id']].copy()
     test_prediction['target'] = prediction
-    test_prediction.to_csv('test_prediction_dropmissing_5.csv', index=False)
+    test_prediction.to_csv('test_prediction_dropmissing_6.csv', index=False)
 
 
-run_prediction()
+print('Running hyperopt model...')
+model = keras.models.load_model('../../Deep_Learning/tpsfeb2021_hyperas01.h5')
+prediction = model.predict(x_test)
+test_prediction = test[['id']].copy()
+test_prediction['target'] = prediction
+test_prediction.to_csv('test_prediction_dropmissing_7.csv', index=False)

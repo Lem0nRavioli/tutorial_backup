@@ -18,8 +18,11 @@ x_test, y_test = data[250000:], target[250000:]
 
 model = Sequential()
 model.add(Dense(128, activation='relu', input_shape=(14,)))
-model.add(Dropout(.3))
 model.add(Dense(64, activation='relu'))
+model.add(Dropout(.5))
+model.add(Dense(32, activation='relu'))
+model.add(Dropout(.3))
+model.add(Dense(32))
 model.add(Dense(1))
 
 model.compile(optimizer='rmsprop', loss='mse')
@@ -33,4 +36,4 @@ plot_history(loss, val_loss, 20, 'loss')
 data_test = df_test[cols[1:-1]]
 test_submit = df_test[['id']].copy()
 test_submit['target'] = model.predict(data_test)
-test_submit.to_csv('test_submit_01.csv', index=False)
+test_submit.to_csv('test_submit_02.csv', index=False)
