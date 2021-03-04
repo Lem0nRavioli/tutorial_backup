@@ -101,3 +101,44 @@ def show_conv(model, x_test, first=0, second=7, third=26, convnum=1, laynum=4):
         axarr[2, x].grid(False)
 
     plt.show()
+
+
+def show_pic_neat():
+    """ syntax keeper, do not call
+        used with a list of pic directories of cats & dogs"""
+    import matplotlib.image as mpimg
+    import matplotlib.pyplot as plt
+    import os
+
+    train_cats_dir = '..'  # supposed to be pic dir
+    train_dogs_dir = '..'
+    train_cat_fnames = []  # suposed to contain os.listdir(dir)
+    train_dog_fnames = []
+    # Parameters for our graph; we'll output images in a 4x4 configuration
+    nrows = 4
+    ncols = 4
+
+    pic_index = 0  # Index for iterating over images
+
+    fig = plt.gcf()
+    fig.set_size_inches(ncols * 4, nrows * 4)
+
+    pic_index += 8
+
+    next_cat_pix = [os.path.join(train_cats_dir, fname)
+                    for fname in train_cat_fnames[pic_index - 8:pic_index]
+                    ]
+
+    next_dog_pix = [os.path.join(train_dogs_dir, fname)
+                    for fname in train_dog_fnames[pic_index - 8:pic_index]
+                    ]
+
+    for i, img_path in enumerate(next_cat_pix + next_dog_pix):
+        # Set up subplot; subplot indices start at 1
+        sp = plt.subplot(nrows, ncols, i + 1)
+        sp.axis('Off')  # Don't show axes (or gridlines)
+
+        img = mpimg.imread(img_path)
+        plt.imshow(img)
+
+    plt.show()
