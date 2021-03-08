@@ -29,25 +29,6 @@ validation_cats_dir = os.path.join(validation_dir, 'cat')
 # Directory with our validation dog pictures
 validation_dogs_dir = os.path.join(validation_dir, 'dog')
 
-model = tf.keras.models.Sequential([
-    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3)),
-    tf.keras.layers.MaxPooling2D(2, 2),
-    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D(2, 2),
-    tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D(2, 2),
-    tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D(2, 2),
-    tf.keras.layers.Dropout(.5),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(512, activation='relu'),
-    tf.keras.layers.Dense(1, activation='sigmoid')
-])
-
-model.compile(loss='binary_crossentropy',
-              optimizer=RMSprop(lr=1e-4),
-              metrics=['accuracy'])
-
 # All images will be rescaled by 1./255
 # train_datagen = ImageDataGenerator(rescale=1. / 255)
 # augmented train_datagen
@@ -71,13 +52,36 @@ validation_generator = test_datagen.flow_from_directory(
     batch_size=20,
     class_mode='binary')
 
-history = model.fit(
-    train_generator,
-    steps_per_epoch=100,  # 2000 images = batch_size * steps
-    epochs=150,
-    validation_data=validation_generator,
-    validation_steps=50,  # 1000 images = batch_size * steps
-)
+
+def run_model():
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3)),
+        tf.keras.layers.MaxPooling2D(2, 2),
+        tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+        tf.keras.layers.MaxPooling2D(2, 2),
+        tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
+        tf.keras.layers.MaxPooling2D(2, 2),
+        tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
+        tf.keras.layers.MaxPooling2D(2, 2),
+        tf.keras.layers.Dropout(.5),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(512, activation='relu'),
+        tf.keras.layers.Dense(1, activation='sigmoid')
+    ])
+
+    model.compile(loss='binary_crossentropy',
+                  optimizer=RMSprop(lr=1e-4),
+                  metrics=['accuracy'])
+
+    history = model.fit(
+        train_generator,
+        steps_per_epoch=100,  # 2000 images = batch_size * steps
+        epochs=150,
+        validation_data=validation_generator,
+        validation_steps=50,  # 1000 images = batch_size * steps
+    )
+
+    return history
 
 
 def show_graph(history):
@@ -103,7 +107,8 @@ def show_graph(history):
     plt.show()
 
 
-show_graph(history)
+# history = run_model()
+# show_graph(history)
 
 """
 Without data augmentation, 30 epochs, capping around 74% after 20 epochs

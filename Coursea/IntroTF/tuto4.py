@@ -1,4 +1,4 @@
-""" Datagen syntax """
+""" Datagen syntax + rollback on data augmentation"""
 
 import silence_tensorflow.auto
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -6,12 +6,14 @@ from tensorflow import keras
 
 len_train = 1027
 len_valid = 256
-epochs = 4
+epochs = 10
 batch_size = 32  # batch size have to be the same for the generator and the step per epoch
 # note that you can have different batch_size between training and validation, but still have to calculate the steps
 # as int(len_data / batch_size)
 
-train_datagen = ImageDataGenerator(rescale=1./255)
+# train_datagen = ImageDataGenerator(rescale=1./255)  # vanilla datagen
+train_datagen = ImageDataGenerator(rescale=1./255, rotation_range=40, width_shift_range=.2, height_shift_range=.2,
+                                   shear_range=.2, zoom_range=.2, horizontal_flip=True, fill_mode='nearest')
 valid_datagen= ImageDataGenerator(rescale=1./255)
 train_generator = train_datagen.flow_from_directory('../../DataSets/horse-or-human/train', target_size=(300, 300),
                                                     batch_size=batch_size, class_mode='binary')
@@ -39,6 +41,13 @@ model.add(keras.layers.Dense(1, activation='sigmoid'))
 model.compile(optimizer=keras.optimizers.RMSprop(lr=.001), loss='binary_crossentropy', metrics=['acc'])
 model.fit(train_generator, steps_per_epoch=int(len_train/batch_size), epochs=epochs,
           validation_data=valid_generator, validation_steps=int(len_valid/batch_size))
+
+
+""" Result for 10 epochs, bsize 32:
+No datagen : 84% 
+datagen :  84%
+need more epochs, but not time today
+"""
 
 
 def see_conv():
@@ -106,4 +115,4 @@ def see_conv():
             plt.show()
 
 
-see_conv()
+# see_conv()
