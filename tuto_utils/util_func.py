@@ -142,3 +142,53 @@ def show_pic_neat():
         plt.imshow(img)
 
     plt.show()
+
+
+def plot_acc_loss(history):
+        acc = history.history['acc']
+        val_acc = history.history['val_acc']
+        loss = history.history['loss']
+        val_loss = history.history['val_loss']
+
+        epochs = range(len(acc))
+
+        plt.plot(epochs, acc, 'bo', label='Training accuracy')
+        plt.plot(epochs, val_acc, 'b', label='Validation accuracy')
+        plt.title('Training and validation accuracy')
+        plt.legend()
+
+        plt.figure()
+
+        plt.plot(epochs, loss, 'bo', label='Training Loss')
+        plt.plot(epochs, val_loss, 'b', label='Validation Loss')
+        plt.title('Training and validation loss')
+        plt.legend()
+
+        plt.show()
+
+
+def extract_embedding(model, word_index, vocab_size, embedding_layer_index=0, file_path=None):
+    import io
+    embedding_layer = model.layers[embedding_layer_index]
+    weights = embedding_layer.get_weights()[0]
+    reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
+    if file_path:
+        import os
+        os.makedirs(file_path, exist_ok=True)
+        out_v = io.open(os.path.join(file_path, 'vecs.tsv'), 'w', encoding='utf-8')
+        out_m = io.open(os.path.join(file_path, 'meta.tsv'), 'w', encoding='utf-8')
+    else:
+        out_v = io.open('vecs.tsv', 'w', encoding='utf-8')
+        out_m = io.open('meta.tsv', 'w', encoding='utf-8')
+    for word_num in range(1, vocab_size):
+        embeddings = weights[word_num]
+        word = reverse_word_index[word_num]
+        out_v.write('\t'.join([str(x) for x in embeddings]) + '\n')
+        out_m.write(word + '\n')
+    out_v.close()
+    out_m.close()
+
+
+def decode_sentence(word_index, text):
+    reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
+    return ' '.join([reverse_word_index.get(i, '?') for i in text])
