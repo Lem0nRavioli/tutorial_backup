@@ -51,7 +51,11 @@ print(labels[0])
 
 model = tf.keras.Sequential([
     tf.keras.layers.Embedding(vocab_size, embedding_dim, input_length=max_length),
-    tf.keras.layers.GlobalAveragePooling1D(),
+    tf.keras.layers.Conv1D(128, 5, activation='relu'),
+    # tf.keras.layers.GlobalAveragePooling1D(),
+    # tf.keras.layers.Bidirectional(tf.keras.layers.GRU(64)),
+    tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64, return_sequences=True)),
+    tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(32)),
     tf.keras.layers.Dense(24, activation='relu'),
     tf.keras.layers.Dense(1, activation='sigmoid')
 ])
@@ -67,4 +71,4 @@ padded = pad_sequences(sequences, maxlen=max_length, padding=padding_type, trunc
 print(model.predict(padded))
 
 plot_acc_loss(history)
-extract_embedding(model, word_index, vocab_size, file_path='sarcasm_vec_embedding')
+# extract_embedding(model, word_index, vocab_size, file_path='sarcasm_vec_embedding')
