@@ -144,23 +144,26 @@ def show_pic_neat():
     plt.show()
 
 
-def plot_acc_loss(history):
+def plot_acc_loss(history, val=True):
         acc = history.history['acc']
-        val_acc = history.history['val_acc']
         loss = history.history['loss']
-        val_loss = history.history['val_loss']
+        if val:
+            val_acc = history.history['val_acc']
+            val_loss = history.history['val_loss']
 
         epochs = range(len(acc))
 
         plt.plot(epochs, acc, 'bo', label='Training accuracy')
-        plt.plot(epochs, val_acc, 'b', label='Validation accuracy')
+        if val:
+            plt.plot(epochs, val_acc, 'b', label='Validation accuracy')
         plt.title('Training and validation accuracy')
         plt.legend()
 
         plt.figure()
 
         plt.plot(epochs, loss, 'bo', label='Training Loss')
-        plt.plot(epochs, val_loss, 'b', label='Validation Loss')
+        if val:
+            plt.plot(epochs, val_loss, 'b', label='Validation Loss')
         plt.title('Training and validation loss')
         plt.legend()
 
