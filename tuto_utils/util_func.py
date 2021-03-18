@@ -22,7 +22,7 @@ def plot_history(train, validation, epoch, metric='', show=True):
         plt.show()
 
 
-def plot_acc_loss(history, epochs):
+def plot_acc_loss_old(history, epochs):
     acc = history.history['acc']
     val_acc = history.history['val_acc']
     loss = history.history['loss']
