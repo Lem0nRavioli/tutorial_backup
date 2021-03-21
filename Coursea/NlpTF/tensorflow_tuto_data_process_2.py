@@ -92,8 +92,30 @@ for input_example_batch, target_example_batch in dataset.take(1):
     print(example_batch_predictions.shape, "# (batche_size, sequence_length, vocab_size")
 # model.summary()
 # to not get model stucked in a loop, we need to take a distribution predictions instead of the highest
-print(example_batch_predictions[0])
-samples_indices = tf.random.categorical(example_batch_predictions[0], num_samples=1)
-print(samples_indices)
-samples_indices = tf.squeeze(samples_indices, axis=-1).numpy()
-print(samples_indices)
+sampled_indices = tf.random.categorical(example_batch_predictions[0], num_samples=1)
+sampled_indices = tf.squeeze(sampled_indices, axis=-1).numpy()
+print("Input:\n", text_from_ids(input_example_batch[0]))
+print()
+print("Next Char Predictions:\n", text_from_ids(sampled_indices))
+loss = tf.losses.SparseCategoricalCrossentropy(from_logits=True)
+example_batch_loss = loss(target_example_batch, example_batch_predictions)
+mean_loss = example_batch_loss.numpy().mean()
+print("Prediction shape: ", example_batch_predictions.shape, " # (batch_size, sequence_length, vocab_size)")
+print("Mean loss:        ", mean_loss)
+
+model.compile(optimizer='adam', loss=loss)
+
+# Directory where the checkpoints will be saved
+checkpoint_dir = '../../Models/text_generator_tf'
+# Name of the checkpoint files
+checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt_{epoch}")
+
+checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath=checkpoint_prefix,
+    save_weights_only=True)
+
+EPOCHS = 20
+history = model.fit(dataset, epochs=EPOCHS, callbacks=[checkpoint_callback])
+
+# https://colab.research.google.com/github/tensorflow/docs/blob/master/site/en/tutorials/text/text_generation.ipynb#scrollTo=3Ky3F_BhgkTW
+# go to section "execute the training"
