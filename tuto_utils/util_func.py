@@ -195,3 +195,31 @@ def extract_embedding(model, word_index, vocab_size, embedding_layer_index=0, fi
 def decode_sentence(word_index, text):
     reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
     return ' '.join([reverse_word_index.get(i, '?') for i in text])
+
+
+def windowed_dataset(series, window_size, batch_size, shuffle_buffer):
+    import silence_tensorflow.auto
+    import tensorflow as tf
+    dataset = tf.data.Dataset.from_tensor_slices(series)
+    dataset = dataset.window(window_size + 1, shift=1, drop_remainder=True)
+    dataset = dataset.flat_map(lambda window: window.batch(window_size + 1))
+    dataset = dataset.shuffle(shuffle_buffer).map(lambda window: (window[:-1], window[-1]))
+    dataset = dataset.batch(batch_size).prefetch(1)
+    return dataset
+
+
+def show_me_lr(model, dataset, epochs, loss, y=None, momentum=0):
+    import silence_tensorflow.auto
+    import tensorflow as tf
+    lr_schedule = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 1e-8 * 10 ** (epoch / 20))
+    model.compile(loss=loss, optimizer=tf.keras.optimizers.SGD(lr=1e-6, momentum=momentum))
+    if y:
+        history = model.fit(dataset, y, epochs=epochs, callbacks=[lr_schedule], verbose=0)
+    else:
+        history = model.fit(dataset, epochs=epochs, callbacks=[lr_schedule], verbose=0)
+
+    lrs = 1e-8 * (10 ** (np.arange(100) / 20))
+    plt.semilogx(lrs, history.history["loss"])
+    plt.axis([1e-8, 1e-3, 0, 300])
+    plt.grid()
+    plt.show()
