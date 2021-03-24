@@ -63,7 +63,39 @@ def simple_dnn_model(lr=1e-6):
         tf.keras.layers.Dense(10, activation='relu'),
         tf.keras.layers.Dense(1)
     ])
-    model.compile(loss='mse', optimizer=tf.keras.optimizers.SGD(lr=lr, momentum=.9))
+    # model.compile(loss='mse', optimizer=tf.keras.optimizers.SGD(lr=lr, momentum=.9))
+    model.compile(loss='mse', optimizer='adam')
+    return model
+
+
+def simple_rnn_model():
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Lambda(lambda x: tf.expand_dims(x, axis=-1), input_shape=[None]),
+        tf.keras.layers.LSTM(32, return_sequences=True),
+        tf.keras.layers.LSTM(16),
+        tf.keras.layers.Dense(10, activation='relu'),
+        tf.keras.layers.Dense(1)
+    ])
+    model.compile(loss='mse', optimizer='adam')
+
+    return model
+
+
+def tuto_week3_rnn_model():
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Lambda(lambda x: tf.expand_dims(x, axis=-1), input_shape=[None]),
+        tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(40, return_sequences=True)),
+        tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(40)),
+        tf.keras.layers.Dense(1),
+        # if not scaled like this, training take forever
+        # this help with tanh (scaling make it better (?))
+        tf.keras.layers.Lambda(lambda x: x * 100)
+    ])
+    optimizer = tf.keras.optimizers.SGD(lr=1e-5, momentum=.9)
+
+    model.compile(loss=tf.keras.losses.Huber(),
+                  optimizer=optimizer,
+                  metrics=['mae'])
 
     return model
 
@@ -94,40 +126,43 @@ shuffle_buffer_size = 1000
 dataset = windowed_dataset(x_train, window_size, batch_size, shuffle_buffer_size)
 
 
-def manual_lr():
+def manual_lr(model, epoch=100, verbose=0):
     """ Train network with increasing lr and plot the loss over time, use this to select best lr
         example here, good lr is around 7e-6"""
-    model = simple_dnn_model()
     # serialized this in tuto_utils.util_func
     # show_me_lr(model, dataset, epochs=100, loss='mse', momentum=.9)
     lr_schedule = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 1e-8 * 10 ** (epoch / 20))
 
-    history = model.fit(dataset, epochs=100, verbose=0, callbacks=[lr_schedule])
+    history = model.fit(dataset, epochs=epoch, verbose=verbose, callbacks=[lr_schedule])
     lrs = 1e-8 * (10 ** (np.arange(100) / 20))
     plt.semilogx(lrs, history.history["loss"])
-    plt.axis([1e-8, 1e-3, 0, 300])
+    plt.axis([1e-8, 1e-3, 0, 30])
     plt.show()
 
 
-model = simple_dnn_model(lr=7e-6)
-history = model.fit(dataset, epochs=500, verbose=0)
-forecast = []
+def evaluate_model(model, epoch=100, verbose=0):
+    history = model.fit(dataset, epochs=epoch, verbose=verbose)
+    forecast = []
 
-for time in range(len(series) - window_size):
-    forecast.append(model.predict(series[time: time + window_size][np.newaxis]))
+    for time in range(len(series) - window_size):
+        forecast.append(model.predict(series[time: time + window_size][np.newaxis]))
 
-forecast = forecast[split_time - window_size:]
-results = np.array(forecast)[:, 0, 0]
+    forecast = forecast[split_time - window_size:]
+    results = np.array(forecast)[:, 0, 0]
 
-print("mae:", tf.keras.metrics.mean_absolute_error(x_valid, results).numpy())
+    print("mae:", tf.keras.metrics.mean_absolute_error(x_valid, results).numpy())
 
-plt.figure(figsize=(10, 6))
-plot_series(time_valid, x_valid)
-plot_series(time_valid, results)
-plt.show()
+    plt.figure(figsize=(10, 6))
+    plot_series(time_valid, x_valid)
+    plot_series(time_valid, results)
+    plt.show()
 
-loss = history.history['loss']
-epochs = range(10, len(loss))
-plot_loss = loss[10:]
-plt.plot(epochs, plot_loss, 'b', label='Training Loss')
-plt.show()
+    loss = history.history['loss']
+    epochs = range(10, len(loss))
+    plot_loss = loss[10:]
+    plt.plot(epochs, plot_loss, 'b', label='Training Loss')
+    plt.show()
+
+
+# manual_lr(tuto_week3_rnn_model())
+evaluate_model(tuto_week3_rnn_model(), epoch=400)
