@@ -197,18 +197,21 @@ def decode_sentence(word_index, text):
     return ' '.join([reverse_word_index.get(i, '?') for i in text])
 
 
-def windowed_dataset(series, window_size, batch_size, shuffle_buffer):
+def windowed_dataset(series, window_size, batch_size, shuffle_buffer=1000):
     import silence_tensorflow.auto
     import tensorflow as tf
     dataset = tf.data.Dataset.from_tensor_slices(series)
     dataset = dataset.window(window_size + 1, shift=1, drop_remainder=True)
     dataset = dataset.flat_map(lambda window: window.batch(window_size + 1))
-    dataset = dataset.shuffle(shuffle_buffer).map(lambda window: (window[:-1], window[-1]))
+    if not shuffle_buffer:
+        dataset = dataset.map(lambda window: (window[:-1], window[-1]))
+    else:
+        dataset = dataset.shuffle(shuffle_buffer).map(lambda window: (window[:-1], window[-1]))
     dataset = dataset.batch(batch_size).prefetch(1)
     return dataset
 
 
-def show_me_lr(model, dataset, epochs, loss, y=None, momentum=0):
+def show_me_lr(model, dataset, epochs, loss, y=None, momentum=0.9, verbose=0, axis=[1e-8, 1e-3, 0, 300]):
     import silence_tensorflow.auto
     import tensorflow as tf
     lr_schedule = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 1e-8 * 10 ** (epoch / 20))
@@ -216,10 +219,19 @@ def show_me_lr(model, dataset, epochs, loss, y=None, momentum=0):
     if y:
         history = model.fit(dataset, y, epochs=epochs, callbacks=[lr_schedule], verbose=0)
     else:
-        history = model.fit(dataset, epochs=epochs, callbacks=[lr_schedule], verbose=0)
+        history = model.fit(dataset, epochs=epochs, callbacks=[lr_schedule], verbose=verbose)
 
     lrs = 1e-8 * (10 ** (np.arange(100) / 20))
     plt.semilogx(lrs, history.history["loss"])
-    plt.axis([1e-8, 1e-3, 0, 300])
+    plt.axis(axis)
     plt.grid()
     plt.show()
+
+
+def plot_series(time, series, format="-", start=0, end=None):
+    plt.plot(time[start:end], series[start:end], format)
+    plt.xlabel("Time")
+    plt.ylabel("Value")
+    plt.grid(True)
+
+
