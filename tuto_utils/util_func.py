@@ -211,19 +211,31 @@ def windowed_dataset(series, window_size, batch_size, shuffle_buffer=1000):
     return dataset
 
 
-def show_me_lr(model, dataset, epochs, loss, y=None, momentum=0.9, verbose=0, axis=[1e-8, 1e-3, 0, 300]):
+def model_forecast(model, series, window_size):
+    """ take trained model and raw series of timeseries data and return predictions """
+    import silence_tensorflow.auto
+    import tensorflow as tf
+    ds = tf.data.Dataset.from_tensor_slices(series)
+    ds = ds.window(window_size, shift=1, drop_remainder=True)
+    ds = ds.flat_map(lambda w: w.batch(window_size))
+    ds = ds.batch(32).prefetch(1)
+    forecast = model.predict(ds)
+    return forecast
+
+
+def show_me_lr(model, dataset, epochs, loss, y=None, momentum=0.9, verbose=0, pltax=(1e-8, 1e-3, 0, 300)):
     import silence_tensorflow.auto
     import tensorflow as tf
     lr_schedule = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 1e-8 * 10 ** (epoch / 20))
-    model.compile(loss=loss, optimizer=tf.keras.optimizers.SGD(lr=1e-6, momentum=momentum))
+    model.compile(loss=loss, optimizer=tf.keras.optimizers.SGD(lr=1e-8, momentum=momentum))
     if y:
         history = model.fit(dataset, y, epochs=epochs, callbacks=[lr_schedule], verbose=0)
     else:
         history = model.fit(dataset, epochs=epochs, callbacks=[lr_schedule], verbose=verbose)
 
-    lrs = 1e-8 * (10 ** (np.arange(100) / 20))
+    lrs = 1e-8 * (10 ** (np.arange(epochs) / 20))
     plt.semilogx(lrs, history.history["loss"])
-    plt.axis(axis)
+    plt.axis(pltax)
     plt.grid()
     plt.show()
 
@@ -234,4 +246,25 @@ def plot_series(time, series, format="-", start=0, end=None):
     plt.ylabel("Value")
     plt.grid(True)
 
+
+def graph_evaluate(fit_model, history, series, split_time, window_size):
+    import silence_tensorflow.auto
+    import tensorflow as tf
+    forecast = model_forecast(fit_model, series, window_size)
+
+    forecast = forecast[split_time - window_size:-1, -1, 0]
+    x_valid = series[split_time:]
+    time_valid = range(len(series))[split_time:]
+    print("mae:", tf.keras.metrics.mean_absolute_error(x_valid, forecast).numpy())
+
+    plt.figure(figsize=(10, 6))
+    plot_series(time_valid, x_valid)
+    plot_series(time_valid, forecast)
+    plt.show()
+
+    loss = history.history['loss']
+    loss = loss[10:]
+    epochs = range(len(loss))
+    plt.plot(epochs, loss, 'b', label='Training Loss')
+    plt.show()
 
