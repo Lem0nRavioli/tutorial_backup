@@ -4,6 +4,7 @@ import csv
 import numpy as np
 from PIL import Image
 import os
+from collections import Counter
 
 base_path = "D:\Progs - D\DataSets\Plant_Pathology"
 base_path_train = os.path.join(base_path, "train_images")
@@ -37,6 +38,7 @@ filenames, labels = extract_filenames(csv_path)
 print(filenames[:10])
 print(labels[:10])
 print(np.unique(labels))
+print(Counter(labels))
 
 # then iterate over filenames and make a tensor of x*y*channel of pictures, then use datagen.flow
 
@@ -64,9 +66,9 @@ def get_np_images(paths):
     return data
 
 
-data = np.array(get_np_images(filenames))
+# data = np.array(get_np_images(filenames))
 
 # need to find a way to flow from directory or squish them during loading in data
 # currently too big for memory
 
-print(data.shape)
+
