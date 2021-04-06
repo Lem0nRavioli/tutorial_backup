@@ -22,14 +22,14 @@ class CFG:
         'healthy'
     ]
     strategy = tf.distribute.get_strategy()
-    batch_size = 16
+    batch_size = 128
 
     img_size = 128
     folds = 5
     seed = 42
     subfolds = 16
     transform = True  # Data augmentation
-    epochs = 5
+    epochs = 10
 
 
 df = pd.read_csv('train_multilabel.csv', index_col='image')
@@ -49,7 +49,13 @@ for filename in train_images_names:
     labels.append(df.loc[filename].values)
 
 images = np.array(train_images)
+image_train = images[:12000]
+image_valid = images[12000:15555]
+image_test = images[15555:]
 labels = np.array(labels)
+labels_train = labels[:12000]
+labels_valid = labels[12000:15555]
+labels_test = labels[12000]
 print(images.shape)
 print(labels.shape)
 
@@ -57,7 +63,7 @@ train_datagen = ImageDataGenerator(
     rescale=1. / 255, rotation_range=40, width_shift_range=.2, height_shift_range=.2, shear_range=.2,
     zoom_range=.2, horizontal_flip=True, fill_mode='nearest'
 )
-
+validation_datagen = ImageDataGenerator(rescale=1. / 255)
 
 model = tf.keras.models.Sequential([
         tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(128, 128, 3)),
@@ -69,10 +75,14 @@ model = tf.keras.models.Sequential([
         tf.keras.layers.Dropout(.5),
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dense(512, activation='relu'),
-        tf.keras.layers.Dense(6, activation='softmax')
+        tf.keras.layers.Dense(6, activation='sigmoid')
     ])
 
-model.compile(loss='categorical_crossentropy', optimizer=tf.keras.optimizers.SGD(lr=.001), metrics=['acc'])
-history = model.fit_generator(train_datagen.flow(images, labels, batch_size=32),
-                              epochs=10, steps_per_epoch=int(len(images) / 32))
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
+history = model.fit_generator(train_datagen.flow(images, labels, batch_size=CFG.batch_size),
+                              epochs=CFG.epochs, steps_per_epoch=int(len(images) / CFG.batch_size),
+                              validation_data=validation_datagen.flow(image_valid, labels_valid, batch_size=CFG.batch_size),
+                              validation_steps=int(len(image_valid) / CFG.batch_size))
+
+# model.save("../Models/plant_128x128")
 
