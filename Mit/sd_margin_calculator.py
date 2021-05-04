@@ -25,14 +25,17 @@ def max_margin(x, y, th, th0):
     return np.max(margin(x, y, th, th0))
 
 
-data = np.array([[1, 2, 1, 2, 10, 10.3, 10.5, 10.7],
-                 [1, 1, 2, 2,  2,  2,  2, 2]])
-labels = np.array([[-1, -1, 1, 1, 1, 1, 1, 1]])
-blue_th = np.array([[0, 1]]).T
-blue_th0 = -1.5
-red_th = np.array([[1, 0]]).T
-red_th0 = -2.5
+def hinge_loss(margin_ref, x, y, th, th0):
+    mar = margin(x, y, th, th0)
+    hinger = lambda x: 1 - x/margin_ref if x < margin_ref else 0
+    v_hinger = np.vectorize(hinger)
+    return v_hinger(mar)
 
-print(sum_margin(data, labels, blue_th, blue_th0))
-print(min_margin(data, labels, blue_th, blue_th0))
-print(max_margin(data, labels, blue_th, blue_th0))
+
+data = np.array([[1.1, 1, 4],[3.1, 1, 2]])
+labels = np.array([[1, -1, -1]])
+th = np.array([[1, 1]]).T
+th0 = -4
+margin_ref = 2**.5 / 2
+
+print(hinge_loss(margin_ref, data, labels, th, th0))
