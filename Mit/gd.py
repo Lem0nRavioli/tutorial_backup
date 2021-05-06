@@ -29,10 +29,8 @@ def gd(f, df, x0, step_size_fn, max_iter):
     return np.array(x), np.array(fs), np.array(xs)
 
 
-""" Calculating gradient of x column vector in respect to f a function that take column vector and return scalar """
-
-
 def num_grad(f, delta=0.001):
+    """ Calculating gradient of x column vector in respect to f a function that take column vector and return scalar """
     def df(x):
         gradient_x = np.zeros(x.shape)
         for i in range(len(x)):
@@ -42,3 +40,56 @@ def num_grad(f, delta=0.001):
             gradient_x[i] = grad
         return gradient_x
     return df
+
+
+def minimize(f, x0, step_size_fn, max_iter):
+    """ Finding derivative using the def above, as - small + small to find slope """
+    df = num_grad(f, delta=.001)
+    return gd(f, df, x0, step_size_fn, max_iter)
+
+
+######################################################################################################################
+# SVM HINGE #
+
+def hinge(v):
+    return np.where(v < 1, 1 - v, 0)
+
+# x is dxn, y is 1xn, th is dx1, th0 is 1x1
+def hinge_loss(x, y, th, th0):
+    return hinge(y * (np.dot(th.T, x) + th0))
+
+# x is dxn, y is 1xn, th is dx1, th0 is 1x1, lam is a scalar
+def svm_obj(x, y, th, th0, lam):
+    total_loss = np.sum(hinge_loss(x, y, th, th0)) / x.shape[-1]
+    regul = lam * (np.linalg.norm(th) ** 2)
+    return total_loss + regul
+
+# SVM HINGE DERIVATIVE #
+
+# Returns the gradient of hinge(v) with respect to v.
+def d_hinge(v):
+    return np.where(v < 1, -1, 0)
+
+# Returns the gradient of hinge_loss(x, y, th, th0) with respect to th
+def d_hinge_loss_th(x, y, th, th0):
+    return d_hinge(y * (np.dot(th.T, x) + th0)) * y * x
+
+# Returns the gradient of hinge_loss(x, y, th, th0) with respect to th0
+def d_hinge_loss_th0(x, y, th, th0):
+    return d_hinge(y * (np.dot(th.T, x) + th0)) * y
+
+# Returns the gradient of svm_obj(x, y, th, th0) with respect to th
+def d_svm_obj_th(x, y, th, th0, lam):
+    total_loss = np.sum(d_hinge_loss_th(x, y, th, th0)) / x.shape[-1]
+    regul = lam * th * 2
+    return total_loss + regul
+
+# Returns the gradient of svm_obj(x, y, th, th0) with respect to th0
+def d_svm_obj_th0(x, y, th, th0, lam):
+    return np.sum(d_hinge_loss_th0(x, y, th, th0)) / x.shape[-1]
+
+# Returns the full gradient as a single vector (which includes both th, th0)
+def svm_obj_grad(X, y, th, th0, lam):
+    g_th = d_svm_obj_th(X, y, th, th0, lam)
+    g_th0 = d_svm_obj_th0(X, y, th, th0, lam)
+    return np.vstack((g_th, g_th0))
