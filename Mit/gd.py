@@ -93,3 +93,36 @@ def svm_obj_grad(X, y, th, th0, lam):
     g_th = d_svm_obj_th(X, y, th, th0, lam)
     g_th0 = d_svm_obj_th0(X, y, th, th0, lam)
     return np.vstack((g_th, g_th0))
+
+
+# not mine but smart one
+def batch_svm_min(data, labels, lam):
+    def svm_min_step_size_fn(i):
+       return 2/(i+1)**0.5
+    init = np.zeros((data.shape[0] + 1, 1))
+
+    def f(th):
+      return svm_obj(data, labels, th[:-1, :], th[-1:,:], lam)
+
+    def df(th):
+      return svm_obj_grad(data, labels, th[:-1, :], th[-1:,:], lam)
+
+    x, fs, xs = gd(f, df, init, svm_min_step_size_fn, 10)
+    return x, fs, xs
+
+
+""" MINE but less efficient // exactly same behavior """
+
+def batch_svm_min(data, labels, lam):
+    def svm_min_step_size_fn(i):
+       return 2/(i+1)**0.5
+    th = np.zeros((data.shape[0] + 1, 1))
+    fs = []
+    ths = []
+    fs.append(svm_obj(data, labels, th[:-1], th[-1:], lam))
+    ths.append(th)
+    for i in range(10):
+        th = th - svm_min_step_size_fn(i+1) * svm_obj_grad(data, labels, th[:-1], th[-1:], lam)
+        fs.append(svm_obj(data, labels, th[:-1], th[-1:], lam))
+        ths.append(th)
+    return np.array(th), np.array(fs), np.array(ths)
