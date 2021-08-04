@@ -1,29 +1,36 @@
 import numpy as np
 
-m = 5
-n = 8
+m = 3000
+n = 280
+it = 1000
+a = 0.0001
+check_on = 100
 
-
-r_matrice = np.random.rand(m, n)
-r_theta = np.random.rand(n, 1)
-r_y = np.random.rand(m, 1)
-
-# print(r_matrice)
-# print(r_theta)
-# print(r_y)
-#
-# r_dot = np.dot(r_matrice, r_theta.T)
-#
-# print(r_dot)
+th = np.random.rand(n, 1)
+X = np.random.rand(m, n)
+y = np.random.rand(m, 1)
 
 
 def cost(x, y, th):
-    return 1/(2 * len(x)) * sum(np.dot(x, th) - y)
+    return 1/(2 * len(x)) * (np.dot(x, th) - y)
 
 
 def get_delta(x, y, th):
-    error = 1/len(x) * sum((np.dot(x, th) - y))  # add xij https://discuss.cloudxlab.com/t/derivative-of-mse-function/5030 )
-    return 2 * error
+    return 2 * np.dot(x.T, cost(x, y, th))
 
 
-print(cost(r_matrice, r_y, r_theta))
+def fit(x, y,  th, it=1000, see_th=False, check_on=100):
+    th_witness = th.copy()
+    for i in range(it):
+        th -= a * get_delta(x, y, th)
+        if i % check_on == 0:
+            print('iteration:' + str(i) + ' cost: ' + str(sum(cost(x, y, th))))
+
+    if see_th:
+        print('initial theta')
+        print(th_witness)
+        print('reduced cost th')
+        print(th)
+
+
+fit(X, y, th, it=it, check_on=check_on)
